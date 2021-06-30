@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VuejsCDN</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.2.0/chart.min.js"></script>
+  <script src="https://unpkg.com/vue@next"></script>
+  <script src="https://unpkg.com/axios@0.20.0-0/dist/axios.min.js"></script>
+  <script src="./chartGeneric.vue.js"></script>
+</head>
+
+<body>
+  <div id="app">
+    <div v-for="chart in chartData">
+      <div style="padding: 15px;">
+        <chart-generic :chart-data="chart" />
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const App = {
+      data() {
+        return {
+          chartData: []
+        }
+      },
+      async mounted() {
+        try {
+          let id = 0;
+          const response = await axios.get("https://brasil.io/covid19/historical/daily/");
+          const label = [
+            {
+              bar: "Casos confirmados",
+              borderColor: "rgb(0,0,255)",
+              backgroundColor: "rgba(0,0,255, 0.5)",
+              line: "Média móvel 7 dias",
+              title: "Novos casos confirmados por dia"
+            },
+            {
+              line: "Óbitos confirmados",
+              borderColor: "rgb(255,0,0)",
+              backgroundColor: "rgb(255,0,0)",
+              title: "Óbitos confirmados acmulados por dia"
+            },
+            {
+              line: "Casos confirmados",
+              borderColor: "rgb(0,0,255)",
+              backgroundColor: "rgb(0,0,255)",
+              title: "Casos confirmados acumulados por dia"
+            },
+            {
+              bar: "Óbitos confirmados",
+              borderColor: "rgb(255,0,0)",
+              backgroundColor: "rgba(255,0,0, 0.5)",
+              line: "Média móvel 7 dias",
+              title: "Novos óbitos confirmados por dia"
+            },
+          ];
+          for (par in response.data.from_states) {
+            console.log(par)
+            if (par != "date") this.chartData.push(
+              {
+                label: label[id],
+                id: `canvas${id++}`,
+                borderColor: label.borderColor,
+                backgroundColor: label.backgroundColor,
+                date: response.data.from_states.date,
+                data: response.data.from_states[par]
+              }
+            );
+          }
+        } catch (e) {
+          console.log(e)
+        }
+      },
+    }
+    const vue = Vue.createApp(App)
+    vue.component('ChartGeneric', ChartGeneric)
+    vue.mount('#app')
+  </script>
+</body>
+
+</html>

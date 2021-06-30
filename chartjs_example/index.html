@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VuejsCDN</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.2.0/chart.min.js"></script>
+  <script src="https://unpkg.com/vue@next"></script>
+  <script src="https://unpkg.com/axios@0.20.0-0/dist/axios.min.js"></script>
+  <script src="./chartGeneric.vue.js"></script>
+</head>
+
+<body>
+  <div id="app">
+    <div v-for="chart in chartData">
+      <div style="padding: 15px;">
+        <chart-generic :chart-data="chart" />
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const App = {
+      data() {
+        return {
+          chartData: []
+        }
+      },
+      async mounted() {
+        try {
+          let res_daily = await axios.get("https://brasil.io/covid19/historical/daily/");
+          let res_weekly = await axios.get("https://brasil.io/covid19/historical/weekly/");
+
+          res_daily = res_daily.data.from_states
+          res_weekly = res_weekly.data
+          const charts = this.dataToChart([
+            {
+              labels: res_daily.date,
+              title: "Novos casos confirmados por dia",
+              type: ['line', 'bar'],
+              label: ["Média móvel 7 dias", "Casos confirmados"],
+              borderColor: ["rgb(0,0,255)"],
+              backgroundColor: ["rgba(0,0,255, 0.2)", "rgba(0,0,255, 0.5)"],
+              data: [this.arrayToInt(this.movingAverage(res_daily.new_confirmed, 7)), res_daily.new_confirmed]
+            },
+            {
+              labels: res_daily.date,
+              title: "Óbitos confirmados acmulados por dia",
+              type: ['line'],
+              label: ["Óbitos confirmados"],
+              borderColor: ["rgb(255,0,0)"],
+              backgroundColor: ["rgba(255,0,0, 0.2)"],
+              data: [this.arrayToInt(this.movingAverage(res_daily.deaths, 7))]
+            },
+            {
+              labels: res_daily.date,
+              title: "Casos confirmados acumulados por dia",
+              type: ['line'],
+              label: ["Casos confirmados"],
+              borderColor: ["rgb(0,0,255)"],
+              backgroundColor: ["rgb(0,0,255)"],
+              data: [this.arrayToInt(this.movingAverage(res_daily.confirmed, 7))]
+
+            },
+            {
+              labels: res_daily.date,
+              title: "Novos óbitos confirmados por dia",
+              type: ['bar', 'line'],
+              label: ["Óbitos confirmados", "Média móvel 7 dias"],
+              borderColor: ["rgb(255,0,0)", "rgb(255,0,0)"],
+              backgroundColor: ["rgba(255,0,0, 0.5)", "rgba(255,0,0, 0.5)"],
+              data: [res_daily.new_deaths, this.arrayToInt(this.movingAverage(res_daily.new_deaths, 7))]
+            },
+            {
+              labels: res_weekly.from_registries.epidemiological_week,
+              title: "Semana epidemiológica (2020)",
+              type: ['line', 'line', 'line', 'line', 'line', 'line', 'line'],
+              label: [
+                "COVID-19 (confirmada ou suspeita)",
+                "Indeterminada",
+                "Outras",
+                "Pneumonia",
+                "Insuf. Respiratória",
+                "SRAG",
+                "Septicemia"
+              ],
+              borderColor: ["#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF", "#C0C0C0"],
+              backgroundColor: ["#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF", "#C0C0C0"],
+              pointRadius: 0,
+              tension: 0.3,
+              data: [
+                res_weekly.from_registries.new_deaths_covid19,
+                res_weekly.from_registries.new_deaths_indeterminate,
+                res_weekly.from_registries.new_deaths_others,
+                res_weekly.from_registries.new_deaths_pneumonia,
+                res_weekly.from_registries.new_deaths_respiratory_failure,
+                res_weekly.from_registries.new_deaths_sars,
+                res_weekly.from_registries.new_deaths_septicemia,
+              ]
+            },
+            {
+              labels: res_weekly.from_registries.epidemiological_week,
+              title: "Óbitos novos por semana epidemiológica 2019 vs 2020",
+              type: ['line', 'line'],
+              label: [
+                "Óbitos na semana (2019)",
+                "Óbitos na semana (2020)",
+              ],
+              borderColor: ["#0000FF", "#FF0000"],
+              backgroundColor: ["#0000FF", "#FF0000"],
+              pointRadius: 0,
+              tension: 0.3,
+              data: [
+                res_weekly.from_registries.new_deaths_total_2019,
+                res_weekly.from_registries.new_deaths_total,
+              ]
+            },
+            {
+              labels: res_weekly.from_registries_excess.epidemiological_week,
+              title: "Novos óbitos (causas agrupadas) por semana epidemiológica",
+              type: [['bar', 'bar', 'bar'], ['bar', 'bar', 'bar']],
+              stacked: true,
+              label: [
+                [
+                  "Outras (2019)",
+                  "Outras respiratórias (2019)",
+                  undefined,
+                ],
+                [
+                  "Outras (2020)",
+                  "Outras respiratórias (2020)",
+                  "COVID-19 (2020)",
+                ]
+              ],
+              borderColor: [
+                [
+                  "rgba(0,0,255, 0.3)",
+                  "rgba(0,255,0, 0.3)",
+                  "rgba(255,0,0, 0.3)",
+                ],
+                [
+                  "rgba(0,0,255, 1.0)",
+                  "rgba(0,255,0, 1.0)",
+                  "rgba(255,0,0, 1.0)",
+                ]
+              ],
+              backgroundColor: [
+                [
+                  "rgba(0,0,255, 0.3)",
+                  "rgba(0,255,0, 0.3)",
+                  "rgba(255,0,0, 0.3)",
+                ],
+                [
+                  "rgba(0,0,255, 1.0)",
+                  "rgba(0,255,0, 1.0)",
+                  "rgba(255,0,0, 1.0)",
+                ]
+              ],
+              data: [
+                [
+                  res_weekly.from_registries_excess.new_deathgroup_other_2019,
+                  res_weekly.from_registries_excess.new_deathgroup_other_respiratory_2019,
+                  res_weekly.from_registries_excess.new_deathgroup_covid19_2019,
+                ],
+                [
+                  res_weekly.from_registries_excess.new_deathgroup_other_2020,
+                  res_weekly.from_registries_excess.new_deathgroup_other_respiratory_2020,
+                  res_weekly.from_registries_excess.new_deathgroup_covid19_2020
+                ]
+              ]
+            },
+            {
+              labels: res_weekly.from_registries_excess.epidemiological_week,
+              title: "Excesso de novos óbitos por semana epidemiológica",
+              type: ['bar'],
+              label: ["Óbitos em excesso"],
+              backgroundColor: [(row) => row.dataset.data[row.dataIndex] >= 0 ? "#FF0000" : "#0000FF"],
+              data: [res_weekly.from_registries_excess.new_excess_deaths]
+            },            
+          ]);
+          let chatId = 0;
+          for (chart of charts) {
+            this.chartData.push(
+              {
+                id: `canvas${chatId++}`,
+                ...chart
+              }
+            );
+          }
+        } catch (e) {
+          console.log(e)
+        }
+      },
+      methods: {
+        arrayToInt: (arr) => {
+          return arr.map(function (value) {
+            return value !== null ? parseInt((value).toFixed(0)) : null;
+          });
+        },
+        movingAverage: (values, n) => {
+          const lastValues = [];
+          const movingAvg = [];
+
+          for (i = 0; i < values.length; i++) {
+            const value = values[i];
+            lastValues.push(value);
+            if (i + 1 < n) {
+              movingAvg.push(null);
+            }
+            else {
+              movingAvg.push(lastValues.reduce((total, val) => total + val) / lastValues.length);
+              lastValues.shift();
+            }
+          }
+          return movingAvg;
+        },
+        hexToRGBA: function (hex, rgba) {
+          parts = hex.split("");
+          parts.shift();
+          if (parts.length == 3) {
+            parts = [parts[0], parts[0], parts[1], parts[1], parts[2], parts[2]];
+          }
+          hexNumber = `0x${parts.join("")}`;
+          red = (hexNumber >> 16) & 255;
+          green = (hexNumber >> 8) & 255;
+          blue = hexNumber & 255;
+          return rgba ? `rgba(${red}, ${green}, ${blue}, ${rgba})` : `rgb(${red}, ${green}, ${blue})`;
+        },
+        dataToChart: function (charts) {
+          const chartsResult = []
+          for (chartData of charts) {
+            const result = {
+              data: {
+                labels: chartData.labels,
+                datasets: []
+              },
+              options: {
+                responsive: true,
+                plugins: {
+                  title: {
+                    display: true,
+                    text: chartData.title
+                  }
+                },
+                scales: {
+                  x: {
+                    stacked: chartData.stacked ? chartData.stacked : false,
+                  },
+                  y: {
+                    stacked: chartData.stacked ? chartData.stacked : false
+                  }
+                }
+              }
+            };
+            if (chartData.stacked) {
+              for (i = 0; i < chartData.type.length; i++) {
+                for (j = 0; j < chartData.type[i].length; j++) {
+                  result.data.datasets.push(
+                    {
+                      type: chartData.type[i][j],
+                      label: chartData.label[i][j],
+                      borderColor: chartData.borderColor[i][j],
+                      backgroundColor: chartData.backgroundColor[i][j],
+                      data: chartData.data[i][j],
+                      stack: i
+                    }
+                  )
+                }
+              }
+            }
+            else {
+              for (i = 0; i < chartData.type.length; i++) {
+                result.data.datasets.push(
+                  {
+                    type: chartData.type[i],
+                    label: chartData.label[i],
+                    borderColor: chartData.borderColor ? chartData.borderColor[i] : "",
+                    backgroundColor: chartData.backgroundColor ? chartData.backgroundColor[i] : "",
+                    data: chartData.data[i],
+                    pointRadius: chartData.pointRadius != undefined ? chartData.pointRadius : 2,
+                    tension: chartData.tension != undefined ? chartData.tension: 0
+                  }
+                )
+              }
+            }
+            chartsResult.push(result)
+          }
+          return chartsResult
+        }
+      },
+    }
+    const vue = Vue.createApp(App)
+    vue.component('ChartGeneric', ChartGeneric)
+    vue.mount('#app')
+  </script>
+</body>
+
+</html>

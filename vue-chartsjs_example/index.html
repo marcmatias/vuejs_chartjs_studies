@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VuejsCDN</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.x"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
+  <script src="https://unpkg.com/vue-chartjs/dist/vue-chartjs.min.js"></script>
+  <script src="https://unpkg.com/axios@0.20.0-0/dist/axios.min.js"></script>
+  <script src="./line-chart.vue.js"></script>
+  <script src="./bar-chart.vue.js"></script>
+
+</head>
+
+<body>
+  <div id="content">
+    <h1>{{message}}</h1>
+    <div v-for="chart of chartData">
+      <div v-if="chart.type == 'line'" style="padding: 15px;">
+        <line-chart :chart-data="chart" />
+      </div>
+      <div v-else-if="chart.type == 'bar'" style="padding: 15px;">
+        <bar-chart :chart-data="chart" />
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    const app = new Vue({
+      data: () => ({
+        message: 'Test Chartjs Vue2.x',
+        chartData: [
+          {
+            type: 'line',
+            data: {
+              labels: [
+                "January",
+                "February",
+                "March",
+                "April",
+                "May",
+                "June",
+                "July",
+              ],
+              datasets: [
+                {
+                  label: "Data One",
+                  backgroundColor: "rgba(255,0,0,0.6)",
+                  data: [40, 39, 10, 40, 39, 80, 40],
+                },
+                {
+                  label: "Data One",
+                  backgroundColor: "rgba(0,0,255,0.6)",
+                  data: [10, 29, 5, 10, 29, 60, 70],
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false
+            }
+          },
+          {
+            type: 'bar',
+            data: {
+              labels: [
+                "January",
+                "February",
+                "March",
+                "April",
+                "May",
+                "June",
+                "July",
+              ],
+              datasets: [
+                {
+                  type: 'line',
+                  label: "Data One",
+                  data: [40, 39, 10, 40, 39, 80, 40],
+                },
+                {
+                  type: 'bar',
+                  label: "Data One",
+                  data: [10, 29, 5, 10, 29, 60, 70],
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false
+            }
+          },
+          {
+            type: 'bar',
+            data: {
+              labels: [
+                "January",
+                "February",
+                "March",
+                "April",
+                "May",
+                "June",
+                "July",
+              ],
+              datasets: [
+                {
+                  label: "Data One",
+                  backgroundColor: "#f87979",
+                  data: [40, 39, 10, 40, 39, 80, 40],
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false
+            }
+          },
+          {
+            type:"bar",
+            data: {
+              labels: [
+                "January",
+                "February",
+                "March",
+                "April",
+                "May",
+                "June",
+                "July",
+              ],
+              datasets: [
+                {
+                  type: "bar",
+                  label: "Casos confirmados",
+                  borderColor: "rgb(0,0,255)",
+                  backgroundColor: "rgba(0,0,255, 0.5)",
+                  data: [40, 39, 10, 40, 39, 80, 40],
+                },
+                {
+                  type: "line",
+                  label: "Média móvel 7 dias",
+                  borderColor: "rgb(0,0,255)",
+                  backgroundColor: "rgba(0,0,255, 0.5)",
+                  data: [40, 39, 10, 40, 39, 80, 40],
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                  title: {
+                      display: true,
+                      text: "Novos casos confirmados por dia"
+                  }
+              }
+            }
+          }
+        ]
+      }),
+      async mounted() {
+        const response = await axios.get("https://brasil.io/covid19/historical/daily/");
+        console.log(response)
+      }
+    });
+    app.$mount("#content");
+  </script>
+
+</body>
+
+</html>

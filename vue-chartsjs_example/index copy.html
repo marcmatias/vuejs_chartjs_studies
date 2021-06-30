@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VuejsCDN</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.x"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
+  <script src="https://unpkg.com/vue-chartjs/dist/vue-chartjs.min.js"></script>
+  <script src="https://unpkg.com/axios@0.20.0-0/dist/axios.min.js"></script>
+  <script src="./line-chart.vue.js"></script>
+  <script src="./bar-chart.vue.js"></script>
+
+</head>
+
+<body>
+  <div id="content">
+    <h1>{{message}}</h1>
+    <div v-for="chart of chartData">
+      <div v-if="chart.type == 'line'">
+        <line-chart :chart-data="chart" :width="300" :height="150" />
+      </div>
+      <div v-else-if="chart.type == 'bar'">
+        <bar-chart :chart-data="chart" :width="300" :height="150" />
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    const app = new Vue({
+      data: () => ({
+        chart_id: 0,
+        chartData: [],
+        message: 'Test Chartjs Vue2.x'
+      }),
+      async mounted() {
+        try {
+          const response = await axios.get("https://brasil.io/covid19/historical/daily/");
+          const charts = [
+            {
+              type: "bar",
+              labels: response.data.from_states.date,
+              title: "Novos casos confirmados por dia",
+              datasets: [
+                {
+                  type: 'line',
+                  label: "Média móvel 7 dias",
+                  borderColor: "rgb(0,0,255)",
+                  backgroundColor: "rgba(0,0,255, 0.2)",
+                  data: this.arrayToInt(this.movingAverage(response.data.from_states.new_confirmed, 7)),
+                },
+                {
+                  type: 'bar',
+                  label: "Casos confirmados",
+                  backgroundColor: "rgba(0,0,255, 0.5)",
+                  data: response.data.from_states.new_confirmed,
+                }
+              ],
+            },
+          ];
+          for (chart of charts) {
+            this.chartData.push(
+              {
+                type: chart.type,
+                data: {
+                  labels: chart.labels,
+                  datasets: chart.datasets,
+                },
+                options: {
+                  responsive: true,
+                  title: {
+                    display: true,
+                    text: chart.title
+                  }
+                }
+              }
+            );
+          }
+        } catch (e) {
+          console.log(e)
+        }
+      },
+      methods: {
+        arrayToInt: (arr) => {
+          return arr.map(function (value) {
+            return value !== null ? parseInt((value).toFixed(0)) : null;
+          });
+        },
+        movingAverage: (values, n) => {
+          const lastValues = [];
+          const movingAvg = [];
+
+          for (i = 0; i < values.length; i++) {
+            const value = values[i];
+            lastValues.push(value);
+            if (i + 1 < n) {
+              movingAvg.push(null);
+            }
+            else {
+              movingAvg.push(lastValues.reduce((total, val) => total + val) / lastValues.length);
+              lastValues.shift();
+            }
+          }
+          return movingAvg;
+        }
+      },
+    });
+    app.$mount("#content");
+  </script>
+
+</body>
+
+</html>

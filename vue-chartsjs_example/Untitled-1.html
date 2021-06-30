@@ -1,0 +1,141 @@
+{
+    data: {
+      labels: [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+      ],
+      datasets: [
+        {
+          type: "bar"
+          label: "Casos confirmados",
+          borderColor: "rgb(0,0,255)",
+          backgroundColor: "rgba(0,0,255, 0.5)",
+          data: [40, 39, 10, 40, 39, 80, 40],
+        },
+        {
+          type: "line"
+          label: "Média móvel 7 dias",
+          borderColor: "rgb(0,0,255)",
+          backgroundColor: "rgba(0,0,255, 0.5)",
+          data: [40, 39, 10, 40, 39, 80, 40],
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false
+      plugins: {
+          title: {
+              display: true,
+              text: "Novos casos confirmados por dia"
+          }
+      }
+    }
+  }
+
+  Example chartjs object generator: 
+
+    labels: [days or months or years...],
+    datasets: [
+        {
+            type: "bar,line...",
+            label: "Name of line,bar...",
+            borderColor: "color",
+            backgroundColor: "color",
+            data: [values],
+        },
+        {
+            type: "bar,line...",
+            label: "Name of line,bar...",
+            borderColor: "color",
+            backgroundColor: "color",
+            data: [values],
+        }
+    ],
+    title: "Example title"
+
+
+
+
+
+
+    {
+      line: "Óbitos confirmados",
+      borderColor: "rgb(255,0,0)",
+      backgroundColor: "rgb(255,0,0, 0.2)",
+      title: "Óbitos confirmados acmulados por dia",
+      datasets: {
+        labels: [response.data.from_states.date],
+        datasets: this.arrayToInt(this.movingAverage(response.data.from_states.deaths, 7)),
+      }
+    },
+    {
+      line: "Casos confirmados",
+      borderColor: "rgb(0,0,255)",
+      backgroundColor: "rgb(0,0,255, 0.2)",
+      title: "Casos confirmados acumulados por dia",
+      datasets: {
+        labels: [response.data.from_states.date],
+        datasets: this.arrayToInt(this.movingAverage(response.data.from_states.confirmed, 7))
+      }
+    },
+    {
+      bar: "Óbitos confirmados",
+      borderColor: "rgb(255,0,0)",
+      backgroundColor: "rgba(255,0,0, 0.5)",
+      line: "Média móvel 7 dias",
+      title: "Novos óbitos confirmados por dia",
+      datasets: {
+        labels: response.data.from_states.date,
+        datasets: response.data.from_states.new_deaths
+      }
+
+
+
+
+
+      {
+        xdata: "",  
+        title: "",
+        type: ["",""],
+        ylabel: ["",""],
+        borderColor: [""],
+        backgroundColor: [""],
+        ydata: []
+      }
+
+    =
+    {
+      labels: response_daily.data.from_states.date,
+      title: "Novos casos confirmados por dia",
+      type: ['line', 'bar'],
+      label: ["Média móvel 7 dias", "Casos confirmados],
+      borderColor: ["rgb(0,0,255)"],
+      backgroundColor: ["rgba(0,0,255, 0.2)", "rgba(0,0,255, 0.5)"] ,
+      data: [response_daily.data.from_states.new_confirmed, this.arrayToInt(this.movingAverage(response_daily.data.from_states.new_confirmed, 7))]
+    },
+
+    {
+      labels: response_daily.data.from_states.date,
+      title: "Novos casos confirmados por dia",
+      datasets: [
+        {
+          type: 'line',
+          label: "Média móvel 7 dias",
+          borderColor: "rgb(0,0,255)",
+          backgroundColor: "rgba(0,0,255, 0.2)",
+          data: this.arrayToInt(this.movingAverage(response_daily.data.from_states.new_confirmed, 7)),
+        },
+        {
+          type: 'bar',
+          label: "Casos confirmados",
+          backgroundColor: "rgba(0,0,255, 0.5)",
+          data: response_daily.data.from_states.new_confirmed,
+        }
+      ],
+    },
